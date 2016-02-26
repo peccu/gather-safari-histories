@@ -1,0 +1,16 @@
+* gather-safari-histories
+collect today accessed urls from OS X Safari History DB( =~/Library/Safari/History.db= ).
+
+** Usage
+
+#+BEGIN_SRC shell-script
+  % git clone https://gitgub.com/peccu/gather-safari-histories.git
+  % cd gather-safari-histories
+  % ./index.sh
+  ## outputs histories in csv format
+#+END_SRC
+
+** Dependency
+   - sqlite3
+** Lisence
+MIT
