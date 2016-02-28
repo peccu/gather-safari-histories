@@ -6,11 +6,79 @@ collect today accessed urls from OS X Safari History DB( =~/Library/Safari/Histo
 #+BEGIN_SRC shell-script
   % git clone https://gitgub.com/peccu/gather-safari-histories.git
   % cd gather-safari-histories
-  % ./index.sh
   ## outputs histories in csv format
+  % ./index.sh
+  ## is equal to below command
+  % cat today.sql| sqlite3 ~/Library/Safari/History.db
+  ## if you want to get yesterday's history
+  % cat yesterday.sql| sqlite3 ~/Library/Safari/History.db
 #+END_SRC
-
+** Example
+#+BEGIN_SRC shell-script
+  % cat yesterday.sql|sqlite3 ~/Library/Safari/History.db | grep 'github.com/peccu'
+  "2016-02-28 14:38:58",peccu,github,https://github.com/peccu
+  "2016-02-28 18:08:03","peccu (peccu)",github,https://github.com/peccu?tab=repositories
+  "2016-02-28 18:08:07","peccu/gather-safari-histories: collect today accessed urls",github,https://github.com/peccu/gather-safari-histories
+  "2016-02-28 18:23:58","peccu/outer-strage: of my brain",github,https://github.com/peccu/outer-strage
+  "2016-02-28 18:24:06","2016/02/28 Sun · Issue #4 · peccu/outer-strage",github,https://github.com/peccu/outer-strage/issues/4
+#+END_SRC
 ** Dependency
    - sqlite3
+** How It Works
+*** OS X Safari histories data structure
+    Safari Histories are stored in =~/Library/Safari/History.db=.
+    It's table structure is below.
+**** Table: history_items
+     web page data. Not history itself.
+| column name                           | type | comment               |
+|---------------------------------------+------+-----------------------|
+| id                                    | int  | web page id           |
+| url                                   | text | web page url          |
+| domain_expansion                      | text | domain name if exists |
+| visit_count                           | int  | visited count         |
+| daily_visit_counts                    | blob | daily visited count   |
+| autocomplete_triggers                 | blob | (I don't know.)       |
+| should_recompute_derived_visit_counts | int  | (I don't know.)       |
+
+#+BEGIN_SRC fundamental
+  sqlite> PRAGMA table_info(history_items);
+  0|id|INTEGER|0||1
+  1|url|TEXT|1||0
+  2|domain_expansion|TEXT|0||0
+  3|visit_count|INTEGER|1||0
+  4|daily_visit_counts|BLOB|1||0
+  5|weekly_visit_counts|BLOB|0||0
+  6|autocomplete_triggers|BLOB|0||0
+  7|should_recompute_derived_visit_counts|INTEGER|1||0
+#+END_SRC
+**** Table: history_visits
+     each histories.
+| column name     | type | comment                                                |
+|-----------------+------+--------------------------------------------------------|
+| id              | int  | history id                                             |
+| history_item    | int  | history_items.id relation                              |
+| visit_time      | real | visited date(NSDate: seconds from 2001/01/01 00:00:00) |
+| title           | text | accessed page title                                    |
+| load_successful | bool | (I don't know.)                                        |
+| http_non_get    | bool | (I don't know.)                                        |
+| synthesized     | bool | (I don't know.)                                        |
+| redirect_source | int  | maybe history_visits.id relation                       |
+| origin          | int  | maybe history_visits.id relation                       |
+| generation      | int  | (I don't know.)                                        |
+
+#+BEGIN_SRC fundamental
+  sqlite> PRAGMA table_info(history_visits);
+  0|id|INTEGER|0||1
+  1|history_item|INTEGER|1||0
+  2|visit_time|REAL|1||0
+  3|title|TEXT|0||0
+  4|load_successful|BOOLEAN|1|1|0
+  5|http_non_get|BOOLEAN|1|0|0
+  6|synthesized|BOOLEAN|1|0|0
+  7|redirect_source|INTEGER|0||0
+  8|redirect_destination|INTEGER|0||0
+  9|origin|INTEGER|1|0|0
+  10|generation|INTEGER|1|0|0
+#+END_SRC
 ** Lisence
 MIT
