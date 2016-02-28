@@ -10,7 +10,7 @@ from history_visits
     join history_items
     on history_visits.history_item = history_items.id
 where
-    visit_time > strftime('%s', 'now', 'start of day') - 978307200
+    visit_time > strftime('%s', 'now', 'localtime', 'start of day', 'utc') - 978307200
 group by
     history_item
 order by
